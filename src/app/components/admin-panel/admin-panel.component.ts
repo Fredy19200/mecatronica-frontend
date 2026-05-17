@@ -21,9 +21,6 @@ export class AdminPanelComponent implements OnInit {
   allProjects: any[] = [];
   teachers: any[] = [];
   students: any[] = [];
-  
-  // Fotos para el carrusel
-  extraFiles: File[] = [];
 
   selectedTeacherIds: (number | string)[] = [];
   selectedStudentIds: (number | string)[] = [];
@@ -137,14 +134,6 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
-  // --- NUEVA: Captura de múltiples fotos para el carrusel ---
-  onExtraImagesSelected(event: any) {
-    const files = event.target.files;
-    if (files) {
-      this.extraFiles = Array.from(files);
-    }
-  }
-
   isTeacherSelected(id: number): boolean { return this.selectedTeacherIds.includes(id); }
   isStudentSelected(id: number): boolean { return this.selectedStudentIds.includes(id); }
 
@@ -174,23 +163,16 @@ export class AdminPanelComponent implements OnInit {
     this.selectedStudentIds.forEach(id => formData.append('student_ids[]', id.toString()));
     this.selectedTeacherIds.forEach(id => formData.append('teacher_ids[]', id.toString()));
 
-    // Foto Principal
+    // Solo se envía el archivo si el usuario seleccionó uno nuevo
     if (this.selectedFile) {
       formData.append('image', this.selectedFile);
-    }
-
-    // --- NUEVO: Agregar fotos adicionales al FormData ---
-    if (this.extraFiles.length > 0) {
-      this.extraFiles.forEach(file => {
-        formData.append('extra_images[]', file);
-      });
     }
 
     if (this.isEditing && this.currentProjectId) {
       formData.append('_method', 'PUT');
       this.projectService.updateProject(this.currentProjectId, formData).subscribe({
         next: () => {
-          alert('¡Proyecto actualizado!');
+          alert('¡Proyecto actualizado con éxito!');
           this.resetForm();
           this.loadProjects();
         },
@@ -199,7 +181,7 @@ export class AdminPanelComponent implements OnInit {
     } else {
       this.projectService.createProject(formData).subscribe({
         next: () => {
-          alert('¡Proyecto creado con carrusel!');
+          alert('¡Proyecto creado con éxito!');
           this.resetForm();
           this.loadProjects();
         },
@@ -221,6 +203,8 @@ export class AdminPanelComponent implements OnInit {
     });
     this.selectedTeacherIds = project.teachers?.map((t: any) => t.id) || [];
     this.selectedStudentIds = project.students?.map((s: any) => s.id) || [];
+    
+    // Si la imagen viene vacía de la BD, se asigna null para que use el placeholder de assets
     this.imagePreview = project.image ? project.image : null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -229,7 +213,7 @@ export class AdminPanelComponent implements OnInit {
     if (confirm('¿Estás seguro?')) {
       this.projectService.deleteProject(id).subscribe({
         next: () => {
-          alert('Eliminado');
+          alert('Eliminado con éxito');
           this.loadProjects();
         },
         error: (err) => this.handleServiceError('eliminar', err)
@@ -244,7 +228,6 @@ export class AdminPanelComponent implements OnInit {
     this.selectedStudentIds = [];
     this.newAddedStudents = [];
     this.newAddedTeachers = [];
-    this.extraFiles = []; // Limpiar las fotos del carrusel
     this.projectForm.reset({ semester_id: '', shift_id: '', category: '' });
     this.selectedFile = null;
     this.imagePreview = null;

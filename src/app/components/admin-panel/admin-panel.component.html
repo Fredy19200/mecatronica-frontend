@@ -79,24 +79,24 @@
             </div>
 
             <div class="col-12 mt-4">
-              <label class="form-label fw-semibold text-secondary small text-uppercase">Imagen del Prototipo</label>
+              <label class="form-label fw-semibold text-secondary small text-uppercase">Imagen Principal del Prototipo</label>
               <div class="upload-container border-dashed p-4 text-center rounded bg-light"
                 style="border: 2px dashed #dee2e6;">
                 <input type="file" (change)="onFileSelected($event)" class="form-control d-none" id="fileUpload"
                   accept="image/*">
-                <label for="fileUpload" class="mb-0 w-100 cursor-pointer">
+                <label for="fileUpload" class="mb-0 w-100 cursor-pointer" style="cursor: pointer;">
                   <i class="bi bi-image text-primary fs-1"></i>
                   <p class="mb-0 text-muted mt-2">
-                    {{ selectedFile ? selectedFile.name : 'Haz clic para subir una imagen' }}
+                    {{ selectedFile ? selectedFile.name : 'Haz clic para subir imagen de portada' }}
                   </p>
                 </label>
               </div>
-              <div *ngIf="imagePreview" class="mt-4">
-                <img [src]="imagePreview" class="img-fluid rounded shadow-sm border"
-                  style="max-height: 250px; width: 100%; object-fit: cover;">
+              <div class="mt-4 text-center">
+                <img [src]="imagePreview ? imagePreview : 'assets/img/placeholder.png'" 
+                     class="img-fluid rounded shadow-sm border card-img-top"
+                     style="height: 200px; object-fit: cover; width: 100%;">
               </div>
             </div>
-
 
             <div class="col-12 mt-4">
               <label class="form-label fw-bold text-primary small text-uppercase">Estudiantes Participantes</label>
@@ -200,8 +200,9 @@
                 <tr *ngFor="let p of allProjects">
                   <td class="fw-bold text-muted">#{{p.id}}</td>
                   <td>
-                    <img [src]="p.image ? p.image : 'https://via.placeholder.com/50'" class="rounded shadow-sm"
-                      style="width: 60px; height: 40px; object-fit: cover;">
+                    <img [src]="p.image ? p.image : 'assets/img/placeholder.png'" 
+                         class="rounded shadow-sm border card-img-top"
+                         style="width: 60px; height: 40px; object-fit: cover;">
                   </td>
                   <td class="text-start">
                     <div class="fw-bold text-dark">{{p.title}}</div>
@@ -209,10 +210,12 @@
                   </td>
                   <td>
                     <div class="btn-group shadow-sm">
-                      <button (click)="onEdit(p)" class="btn btn-sm btn-outline-primary"><i
-                          class="bi bi-pencil-square"></i></button>
-                      <button (click)="onDelete(p.id)" class="btn btn-sm btn-outline-danger"><i
-                          class="bi bi-trash"></i></button>
+                      <button (click)="onEdit(p)" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button (click)="onDelete(p.id)" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>
