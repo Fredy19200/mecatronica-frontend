@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class AdminPanelComponent implements OnInit {
 
+  // Áreas consistentes con el componente de la lista
   categories = ['Robótica', 'Automatización', 'Electrónica', 'Mecanismos', 'Software Industrial'];
 
   semesters: any[] = [];
@@ -61,12 +62,16 @@ export class AdminPanelComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  // --- GESTIÓN DE MIEMBROS DINÁMICOS ---
   addMember(type: 'student' | 'teacher', name: string) {
     if (!name.trim()) return;
+
+    // EXPRESIÓN REGULAR: Solo permite letras, espacios y tildes. 
+    // No permite números ni caracteres especiales extraños.
     const soloLetrasRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
 
     if (!soloLetrasRegex.test(name)) {
-      alert('⚠️ Error: El nombre solo debe contener letras.');
+      alert('⚠️ Error: El nombre solo debe contener letras. No se permiten números ni símbolos.');
       return;
     }
 
@@ -93,19 +98,23 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
+  // --- CARGA DE DATOS ---
   loadInitialData() {
     this.projectService.getSemesters().subscribe({
       next: (data) => this.semesters = data.sort((a: any, b: any) => a.id - b.id),
       error: (err) => this.handleServiceError('cargar semestres', err)
     });
+
     this.projectService.getShifts().subscribe({
       next: (data) => this.shifts = data.sort((a: any, b: any) => a.id - b.id),
       error: (err) => this.handleServiceError('cargar turnos', err)
     });
+
     this.projectService.getTeachers().subscribe({
       next: (data) => this.teachers = data,
       error: (err) => this.handleServiceError('cargar profesores', err)
     });
+
     this.projectService.getStudents().subscribe({
       next: (data) => this.students = data,
       error: (err) => this.handleServiceError('cargar estudiantes', err)
@@ -119,14 +128,16 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
+  // --- GESTIÓN DE FORMULARIO ---
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 2097152) {
-        alert('⚠️ La imagen es muy pesada. Máximo 2MB.');
+        alert('⚠️ La imagen es muy pesada. El límite es 2MB para asegurar la subida.');
         event.target.value = '';
         return;
       }
+
       this.selectedFile = file;
       const reader = new FileReader();
       reader.onload = () => this.imagePreview = reader.result as string;
@@ -134,8 +145,13 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
-  isTeacherSelected(id: number): boolean { return this.selectedTeacherIds.includes(id); }
-  isStudentSelected(id: number): boolean { return this.selectedStudentIds.includes(id); }
+  isTeacherSelected(id: number): boolean {
+    return this.selectedTeacherIds.includes(id);
+  }
+
+  isStudentSelected(id: number): boolean {
+    return this.selectedStudentIds.includes(id);
+  }
 
   onTeacherChange(event: any, id: number) {
     if (event.target.checked) this.selectedTeacherIds.push(id);
@@ -163,7 +179,6 @@ export class AdminPanelComponent implements OnInit {
     this.selectedStudentIds.forEach(id => formData.append('student_ids[]', id.toString()));
     this.selectedTeacherIds.forEach(id => formData.append('teacher_ids[]', id.toString()));
 
-    // Solo se envía el archivo si el usuario seleccionó uno nuevo
     if (this.selectedFile) {
       formData.append('image', this.selectedFile);
     }
@@ -172,28 +187,30 @@ export class AdminPanelComponent implements OnInit {
       formData.append('_method', 'PUT');
       this.projectService.updateProject(this.currentProjectId, formData).subscribe({
         next: () => {
-          alert('¡Proyecto actualizado con éxito!');
+          alert('¡Proyecto actualizado!');
           this.resetForm();
           this.loadProjects();
         },
-        error: (err) => alert('Error al actualizar: ' + (err.error?.message || 'Error'))
+        error: (err) => alert('Error al actualizar: ' + (err.error?.message || 'Error desconocido'))
       });
     } else {
       this.projectService.createProject(formData).subscribe({
         next: () => {
-          alert('¡Proyecto creado con éxito!');
+          alert('¡Proyecto creado!');
           this.resetForm();
           this.loadProjects();
         },
-        error: (err) => alert('Error al crear: ' + (err.error?.message || 'Error'))
+        error: (err) => alert('Error al crear: ' + (err.error?.message || 'Error desconocido'))
       });
     }
   }
 
+  // --- ACCIONES ---
   onEdit(project: any) {
     this.resetForm();
     this.isEditing = true;
     this.currentProjectId = project.id;
+
     this.projectForm.patchValue({
       title: project.title,
       description: project.description,
@@ -201,22 +218,22 @@ export class AdminPanelComponent implements OnInit {
       shift_id: project.shift_id,
       category: project.category
     });
+
     this.selectedTeacherIds = project.teachers?.map((t: any) => t.id) || [];
     this.selectedStudentIds = project.students?.map((s: any) => s.id) || [];
-    
-    // Si la imagen viene vacía de la BD, se asigna null para que use el placeholder de assets
+
     this.imagePreview = project.image ? project.image : null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   onDelete(id: number) {
-    if (confirm('¿Estás seguro?')) {
+    if (confirm('¿Estás seguro de que deseas eliminar este proyecto?')) {
       this.projectService.deleteProject(id).subscribe({
         next: () => {
-          alert('Eliminado con éxito');
+          alert('Eliminado correctamente');
           this.loadProjects();
         },
-        error: (err) => this.handleServiceError('eliminar', err)
+        error: (err) => this.handleServiceError('eliminar el proyecto', err)
       });
     }
   }
@@ -228,6 +245,7 @@ export class AdminPanelComponent implements OnInit {
     this.selectedStudentIds = [];
     this.newAddedStudents = [];
     this.newAddedTeachers = [];
+
     this.projectForm.reset({ semester_id: '', shift_id: '', category: '' });
     this.selectedFile = null;
     this.imagePreview = null;
@@ -236,10 +254,12 @@ export class AdminPanelComponent implements OnInit {
   private handleServiceError(action: string, err: any) {
     console.error(`Error al ${action}:`, err);
     if (err.status === 401) {
+      alert('Tu sesión ha caducado. Ingresa de nuevo.');
       this.authService.logout();
       this.router.navigate(['/login']);
     } else {
-      alert(`Error al ${action}: ${err.error?.message || 'Error'}`);
+      const msg = err.error?.message || 'Revisa la conexión con el servidor.';
+      alert(`Error al ${action}: ${msg}`);
     }
   }
 }
