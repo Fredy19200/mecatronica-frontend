@@ -70,27 +70,14 @@ export class ProjectListComponent implements OnInit {
   selectSemester(semesterId: number | null) { this.selectedSemester = semesterId; }
   onSearch(event: any) { this.searchTerm = event.target.value; }
 
-  // --- FUNCIÓN ACTUALIZADA PARA EL CARRUSEL ---
+  // Selección directa y limpia de un proyecto para el modal
   verDetalle(project: any) {
     this.selectedProject = project;
-    document.body.style.overflow = 'hidden'; // Bloquea el scroll del fondo
-
-    // Esperamos 100ms a que Angular renderice el modal y el ID "projectCarousel" exista
-    setTimeout(() => {
-      const carouselElement = document.getElementById('projectCarousel');
-      if (carouselElement && (window as any).bootstrap) {
-        // Inicializamos el carrusel de Bootstrap manualmente
-        new (window as any).bootstrap.Carousel(carouselElement, {
-          interval: 3000,
-          ride: 'carousel',
-          wrap: true
-        });
-      }
-    }, 150);
+    document.body.style.overflow = 'hidden'; // Bloquea el scroll de la página principal
   }
 
   cerrarDetalle() {
     this.selectedProject = null;
-    document.body.style.overflow = 'auto'; // Devuelve el scroll al fondo
+    document.body.style.overflow = 'auto'; // Restaura el scroll
   }
 }
