@@ -154,17 +154,22 @@ export class AdminPanelComponent implements OnInit {
     }
 
     const formData = new FormData();
-    formData.append('title', this.projectForm.get('tittle')?.value ?? '');
-    formData.append('description', this.projectForm.get('description')?.value ?? '');
-    formData.append('semester_id', this.projectForm.get('semester_id')?.value ?? '');
-    formData.append('shift_id', this.projectForm.get('shift_id')?.value ?? '');
-    formData.append('category', this.projectForm.get('category')?.value ?? '');
+    formData.append('title', this.projectForm.value.title ?? '');
+    formData.append('description', this.projectForm.value.description ?? '');
+    formData.append('semester_id', this.projectForm.value.semester_id ?? '');
+    formData.append('shift_id', this.projectForm.value.shift_id ?? '');
+    formData.append('category', this.projectForm.value.category ?? '');
 
     this.selectedStudentIds.forEach(id => formData.append('student_ids[]', id.toString()));
     this.selectedTeacherIds.forEach(id => formData.append('teacher_ids[]', id.toString()));
 
-    if (this.isEditing && this.currentProjectId) {
+    // Solo se envía el archivo si el usuario seleccionó uno nuevo
+    if (this.selectedFile) {
+      formData.append('image', this.selectedFile);
+    }
 
+    if (this.isEditing && this.currentProjectId) {
+      formData.append('_method', 'PUT');
       this.projectService.updateProject(this.currentProjectId, formData).subscribe({
         next: () => {
           alert('¡Proyecto actualizado con éxito!');
@@ -198,7 +203,7 @@ export class AdminPanelComponent implements OnInit {
     });
     this.selectedTeacherIds = project.teachers?.map((t: any) => t.id) || [];
     this.selectedStudentIds = project.students?.map((s: any) => s.id) || [];
-
+    
     // Si la imagen viene vacía de la BD, se asigna null para que use el placeholder de assets
     this.imagePreview = project.image ? project.image : null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
